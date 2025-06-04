@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./pages/login";
+import Login from "./pages/Login";
 import Search from "./pages/Search";
 import Results from "./pages/Results";
 import "bootstrap/dist/css/bootstrap.min.css";

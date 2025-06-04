@@ -1,33 +1,76 @@
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [count, setCount] = useState(0);
+  const [isLoggedIn, setLoggedIn] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    // Prevent the browser from reloading the page
+    e.preventDefault();
+    console.log("handleSubmit ran"); //Debugging
+    console.log("name submitted: ", name); //Debugging
+    console.log("email submitted: ", email); //Debugging
+    login(name, email);
+    console.log("end of handleSubmit"); //Debugging
+  };
+
+  const login = async (name: string, email: string) => {
+    try {
+      const response = await fetch(
+        "https://frontend-take-home-service.fetch.com/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ name, email }),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Login successful"); //Debugging
+        setLoggedIn(true);
+        navigate("/search");
+      } else {
+        console.error(`Login failed. Status: ${response.status}`); //Debugging
+      }
+    } catch (error) {
+      console.error("Network or server error:", error);
+    }
+  };
 
   return (
     <>
       <title>Login</title>
-      <form class="mx-auto p-4">
+      <form class="mx-auto p-4" onSubmit={handleSubmit}>
         <div class="mb-3">
-          <label for="exampleInputEmail1" class="form-label">
+          <label for="inputName" class="form-label">
+            Name
+          </label>
+          <input
+            type="text"
+            class="form-control"
+            id="inputName"
+            onChange={(e) => setName(e.target.value)}
+          ></input>
+        </div>
+        <div class="mb-3">
+          <label for="inputEmail" class="form-label">
             Email address
           </label>
           <input
             type="email"
             class="form-control"
-            id="exampleInputEmail1"
+            id="inputEmail"
             aria-describedby="emailHelp"
+            onChange={(e) => setEmail(e.target.value)}
           ></input>
         </div>
-        <div class="mb-3">
-          <label for="exampleInputPassword1" class="form-label">
-            Password
-          </label>
-          <input
-            type="password"
-            class="form-control"
-            id="exampleInputPassword1"
-          ></input>
-        </div>
+
         <button type="submit" class="btn btn-primary">
           Submit
         </button>
