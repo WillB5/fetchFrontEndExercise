@@ -2,7 +2,6 @@ import { createContext, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [isLoggedIn, setLoggedIn] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
@@ -33,7 +32,6 @@ function Login() {
 
       if (response.ok) {
         console.log("Login successful"); //Debugging
-        setLoggedIn(true);
         navigate("/search");
       } else {
         console.error(`Login failed. Status: ${response.status}`); //Debugging
@@ -46,32 +44,32 @@ function Login() {
   return (
     <>
       <title>Login</title>
-      <form class="mx-auto p-4" onSubmit={handleSubmit}>
-        <div class="mb-3">
+      <form className="mx-auto p-4" onSubmit={handleSubmit}>
+        <div className="mb-3">
           <label for="inputName" class="form-label">
             Name
           </label>
           <input
             type="text"
-            class="form-control"
+            className="form-control"
             id="inputName"
             onChange={(e) => setName(e.target.value)}
           ></input>
         </div>
-        <div class="mb-3">
+        <div className="mb-3">
           <label for="inputEmail" class="form-label">
             Email address
           </label>
           <input
             type="email"
-            class="form-control"
+            className="form-control"
             id="inputEmail"
             aria-describedby="emailHelp"
             onChange={(e) => setEmail(e.target.value)}
           ></input>
         </div>
 
-        <button type="submit" class="btn btn-primary">
+        <button type="submit" className="btn btn-primary">
           Submit
         </button>
       </form>
