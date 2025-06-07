@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DogInfo from "../Components/dogInfo";
 
 function Results() {
   const [count, setCount] = useState(0);

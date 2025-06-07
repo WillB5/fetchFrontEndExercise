@@ -5,15 +5,15 @@ function Login() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
+  //TODO: Add a context to store if Login was successful or not
 
   const handleSubmit = (e) => {
     // Prevent the browser from reloading the page
     e.preventDefault();
-    console.log("handleSubmit ran"); //Debugging
-    console.log("name submitted: ", name); //Debugging
-    console.log("email submitted: ", email); //Debugging
+    console.log("handleSubmit ran");
+    console.log("name submitted: ", name);
+    console.log("email submitted: ", email);
     login(name, email);
-    console.log("end of handleSubmit"); //Debugging
   };
 
   const login = async (name: string, email: string) => {
@@ -31,7 +31,7 @@ function Login() {
       );
 
       if (response.ok) {
-        console.log("Login successful"); //Debugging
+        console.log("Login successful");
         navigate("/search");
       } else {
         console.error(`Login failed. Status: ${response.status}`); //Debugging
@@ -46,7 +46,7 @@ function Login() {
       <title>Login</title>
       <form className="mx-auto p-4" onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label for="inputName" class="form-label">
+          <label htmlFor="inputName" className="form-label">
             Name
           </label>
           <input
@@ -57,7 +57,7 @@ function Login() {
           ></input>
         </div>
         <div className="mb-3">
-          <label for="inputEmail" class="form-label">
+          <label htmlFor="inputEmail" className="form-label">
             Email address
           </label>
           <input
