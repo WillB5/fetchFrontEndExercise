@@ -14,7 +14,7 @@ interface Dog {
 
 function Search() {
   const [dogs, setDogs] = useState<Dog[]>([]);
-  const [filterZipCode, setFilterZipcode] = useState("All");
+  const [sortOrder, setSortOrder] = useState("asc");
   const [filterBreed, setFilterBreed] = useState("All");
   const [breeds, setBreeds] = useState<string[]>([]);
   const [dogIDs, setDogIDs] = useState<string[]>([]);
@@ -23,14 +23,18 @@ function Search() {
 
   const dogsBaseURL = "https://frontend-take-home-service.fetch.com";
 
-  const fetchDogs = async () => {
-    let url = `${dogsBaseURL}/dogs/search?sort=breed:asc&breeds=`;
-
-    if (filterBreed !== "All") {
-      url += encodeURIComponent(filterBreed);
+  function formQuery(breed: string): string {
+    if (breed == "All") {
+      return `${dogsBaseURL}/dogs/search?sort=breed:${sortOrder}`;
     } else {
-      url = `${dogsBaseURL}/dogs/search?sort=breed:asc`;
+      return `${dogsBaseURL}/dogs/search?sort=breed:${sortOrder}&breeds=${encodeURIComponent(
+        breed
+      )}`;
     }
+  }
+
+  const fetchDogs = async () => {
+    let url = formQuery(filterBreed);
     console.log("Fetching dogs with URL:", url);
 
     const response = await fetch(url, {
@@ -207,7 +211,7 @@ function Search() {
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                State: {filterZipCode}
+                State:
               </button>
               <ul className="dropdown-menu dropdown-menu-dark">
                 <li>
