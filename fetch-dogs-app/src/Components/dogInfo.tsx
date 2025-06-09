@@ -10,7 +10,12 @@ interface Dog {
 function DogInfo(dog: Dog) {
   return (
     <div className="card" key={dog.id}>
-      <img src={dog.img} alt={dog.name} className="card-img-top" />
+      <img
+        src={dog.img}
+        alt={dog.name}
+        className="card-img-top object-fit-fill border rounded"
+        style={{ height: "200px", width: "100%" }}
+      />
       <div className="card-body">
         <h2 className="card-title">{dog.name}</h2>
         <p className="card-text">Age: {dog.age}</p>

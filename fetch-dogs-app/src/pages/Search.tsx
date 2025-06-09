@@ -128,6 +128,10 @@ function Search() {
     setFavorites([...favorites, dog]); // Create a new array without mutation
   };
 
+  const removeFromFavorites = (id: string) => {
+    setFavorites(favorites.filter((dog) => dog.id !== id));
+  };
+
   const dogIDList = breeds.map((item, index) => (
     <li key={index}>
       <button
@@ -140,82 +144,148 @@ function Search() {
     </li>
   ));
 
-  const dogInfo = dogs.map((item) => (
-    <div className="card" key={item.id} style={{ width: "18rem" }}>
-      <DogInfo
-        id={item.id}
-        img={item.img}
-        name={item.name}
-        age={item.age}
-        zip_code={item.zip_code}
-        breed={item.breed}
-      />
-      <button
-        onClick={() => addToFavorites(item, favorites, setFavorites)}
-        className="btn btn-primary"
+  const dogInfo = dogs
+    .filter((dog) => !favorites.some((fav) => fav.id === dog.id)) // ⛔ Exclude favorites
+    .map((item) => (
+      <div
+        className="card text-center align-middle"
+        key={item.id}
+        style={{ width: "18rem" }}
       >
-        Add to Favorites
-      </button>
-    </div>
-  ));
+        <DogInfo
+          id={item.id}
+          img={item.img}
+          name={item.name}
+          age={item.age}
+          zip_code={item.zip_code}
+          breed={item.breed}
+        />
+        <button
+          onClick={() => addToFavorites(item, favorites, setFavorites)}
+          className="btn btn-primary"
+        >
+          Add to Favorites
+        </button>
+      </div>
+    ));
 
   return (
     <>
       <title>Search</title>
-      <h1>Search Page</h1>
-
-      <div id="filterBar" className="d-flex gap-3">
-        <h4>Filter by:</h4>
-        <div className="dropdown">
-          <button
-            className="btn btn-secondary dropdown-toggle"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            Breed: {filterBreed}
-          </button>
-          <ul className="dropdown-menu dropdown-menu-dark">
-            <li>
+      <div className="bg-secondary bg-opacity-50 min-vh-100">
+        <h1 className="text-center">Search Page</h1>
+        <div className="d-flex justify-content-center mt-3">
+          <div id="filterBar" className="d-flex gap-3">
+            <h4>Filter by:</h4>
+            <div className="dropdown">
               <button
-                className="dropdown-item"
-                onClick={() => handleBreedSelect("All")}
+                className="btn btn-secondary dropdown-toggle"
                 type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
               >
-                All
+                Breed: {filterBreed}
               </button>
-            </li>
-            {dogIDList}
-          </ul>
+              <ul className="dropdown-menu dropdown-menu-dark">
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => handleBreedSelect("All")}
+                    type="button"
+                  >
+                    All
+                  </button>
+                </li>
+                {dogIDList}
+              </ul>
+            </div>
+
+            <div className="dropdown">
+              <button
+                className="btn btn-secondary dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                State: {filterZipCode}
+              </button>
+              <ul className="dropdown-menu dropdown-menu-dark">
+                <li>
+                  <button className="dropdown-item" type="button"></button>
+                </li>
+                {}
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <div className="dropdown">
-          <button
-            className="btn btn-secondary dropdown-toggle"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
+        <div
+          className="d-flex justify-content-center gap-4 mt-4"
+          style={{ height: "85vh" }}
+        >
+          {/* Available Dogs */}
+          <div
+            className="border rounded border-primary p-3 overflow-auto bg-light"
+            style={{ width: "45%", height: "100%" }}
           >
-            State: {filterZipCode}
-          </button>
-          <ul className="dropdown-menu dropdown-menu-dark">
-            <li>
-              <button className="dropdown-item" type="button"></button>
-            </li>
-            {}
-          </ul>
-        </div>
-      </div>
-      <Favorites dogs={favorites} />
-      <h2 className="mt-3">Dogs</h2>
-      <div className="d-flex flex-wrap justify-content-center gap-3 mt-3">
-        <div className="container text-center">
-          {dogInfo}
-          {dogs.length === 0 && (
-            <div className="alert alert-info" role="alert">
-              No dogs found. Please try a different filter.
+            <h2 className="mt-3 text-center align-middle">Available Dogs</h2>
+
+            <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 justify-content-center">
+              {dogs
+                .filter((dog) => !favorites.some((fav) => fav.id === dog.id))
+                .map((item) => (
+                  <div
+                    key={item.id}
+                    className="col d-flex justify-content-center"
+                  >
+                    <div
+                      className="card text-center"
+                      style={{ width: "18rem" }}
+                    >
+                      <DogInfo
+                        id={item.id}
+                        img={item.img}
+                        name={item.name}
+                        age={item.age}
+                        zip_code={item.zip_code}
+                        breed={item.breed}
+                      />
+                      <button
+                        onClick={() =>
+                          addToFavorites(item, favorites, setFavorites)
+                        }
+                        className="btn btn-primary"
+                      >
+                        Add to Favorites
+                      </button>
+                    </div>
+                  </div>
+                ))}
             </div>
-          )}
+
+            {dogs.filter((dog) => !favorites.some((fav) => fav.id === dog.id))
+              .length === 0 && (
+              <div className="alert alert-info mt-3" role="alert">
+                No dogs found. Please try a different filter.
+              </div>
+            )}
+          </div>
+
+          {/* Favorites */}
+          <div
+            className="border border-success rounded p-3 overflow-auto bg-light"
+            style={{
+              width: "30%", // behaves like Available Dogs
+              maxWidth: "22rem", // ensures it never exceeds 22rem
+              height: "100%",
+              alignSelf: "flex-start",
+            }}
+          >
+            <Favorites
+              dogs={favorites}
+              removeFromFavorites={removeFromFavorites}
+            />
+          </div>
         </div>
       </div>
     </>
