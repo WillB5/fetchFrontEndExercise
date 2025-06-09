@@ -1,5 +1,3 @@
-import React from "react";
-
 interface Dog {
   id: string;
   img: string;
@@ -14,7 +12,7 @@ function DogInfo(dog: Dog) {
     <div className="card" key={dog.id}>
       <img src={dog.img} alt={dog.name} className="card-img-top" />
       <div className="card-body">
-        <h5 className="card-title">{dog.name}</h5>
+        <h2 className="card-title">{dog.name}</h2>
         <p className="card-text">Age: {dog.age}</p>
         <p className="card-text">Breed: {dog.breed}</p>
         <p className="card-text">Zip Code: {dog.zip_code}</p>

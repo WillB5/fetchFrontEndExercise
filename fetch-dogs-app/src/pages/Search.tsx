@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import DogInfo from "../Components/dogInfo";
+import Favorites from "../Components/favorites";
 
 interface Dog {
   id: string;
@@ -13,24 +15,32 @@ interface Dog {
 function Search() {
   const [dogs, setDogs] = useState<Dog[]>([]);
   const [filterZipCode, setFilterZipcode] = useState("All");
-  const [zipCodes, setZipcodes] = useState();
   const [filterBreed, setFilterBreed] = useState("All");
   const [breeds, setBreeds] = useState<string[]>([]);
   const [dogIDs, setDogIDs] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<Dog[]>([]);
+  const navigate = useNavigate();
 
   const dogsBaseURL = "https://frontend-take-home-service.fetch.com";
 
   const fetchDogs = async () => {
-    const response = await fetch(
-      "https://frontend-take-home-service.fetch.com/dogs/search?",
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    );
+    let url = `${dogsBaseURL}/dogs/search?sort=breed:asc&breeds=`;
+
+    if (filterBreed !== "All") {
+      url += encodeURIComponent(filterBreed);
+    } else {
+      url = `${dogsBaseURL}/dogs/search?sort=breed:asc`;
+    }
+    console.log("Fetching dogs with URL:", url);
+
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "include",
+    });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch Dogs: ${response.status}`);
+      // Redirect to login if not authenticated
+      navigate("/");
     }
 
     const data = await response.json();
@@ -76,12 +86,6 @@ function Search() {
     setBreeds(data);
   };
 
-  function formQuery(breed: string, zipCode: string) {
-    if (zipCode == "All" && breed == "All") {
-      return "";
-    }
-  }
-
   useEffect(() => {
     fetchDogs();
     fetchBreeds();
@@ -108,13 +112,28 @@ function Search() {
     setFilterBreed(breed);
   };
 
+  const addToFavorites = (
+    dog: Dog,
+    favorites: Dog[],
+    setFavorites: (dogs: Dog[]) => void
+  ) => {
+    const isAlreadyFavorite = favorites.some((fav) => fav.id === dog.id);
+
+    if (isAlreadyFavorite) {
+      console.log(`${dog.name} is already in favorites.`);
+      return;
+    }
+
+    console.log(`${dog.name} added to favorites!`);
+    setFavorites([...favorites, dog]); // Create a new array without mutation
+  };
+
   const dogIDList = breeds.map((item, index) => (
     <li key={index}>
       <button
         className="dropdown-item"
         onClick={() => handleBreedSelect(item)}
         type="button"
-        key={index}
       >
         {item}
       </button>
@@ -122,7 +141,7 @@ function Search() {
   ));
 
   const dogInfo = dogs.map((item) => (
-    <div className="card" key={item.id}>
+    <div className="card" key={item.id} style={{ width: "18rem" }}>
       <DogInfo
         id={item.id}
         img={item.img}
@@ -131,6 +150,12 @@ function Search() {
         zip_code={item.zip_code}
         breed={item.breed}
       />
+      <button
+        onClick={() => addToFavorites(item, favorites, setFavorites)}
+        className="btn btn-primary"
+      >
+        Add to Favorites
+      </button>
     </div>
   ));
 
@@ -138,6 +163,7 @@ function Search() {
     <>
       <title>Search</title>
       <h1>Search Page</h1>
+
       <div id="filterBar" className="d-flex gap-3">
         <h4>Filter by:</h4>
         <div className="dropdown">
@@ -170,7 +196,7 @@ function Search() {
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            Zip Code: {filterZipCode}
+            State: {filterZipCode}
           </button>
           <ul className="dropdown-menu dropdown-menu-dark">
             <li>
@@ -180,15 +206,16 @@ function Search() {
           </ul>
         </div>
       </div>
-
-      <div className="container text-center">
-        <div className="row">{dogInfo}</div>
-        <div className="row">
-          <div className="col">1 of 5</div>
-          <div className="col">2 of 5</div>
-          <div className="col">3 of 5</div>
-          <div className="col">4 of 5</div>
-          <div className="col">5 of 5</div>
+      <Favorites dogs={favorites} />
+      <h2 className="mt-3">Dogs</h2>
+      <div className="d-flex flex-wrap justify-content-center gap-3 mt-3">
+        <div className="container text-center">
+          {dogInfo}
+          {dogs.length === 0 && (
+            <div className="alert alert-info" role="alert">
+              No dogs found. Please try a different filter.
+            </div>
+          )}
         </div>
       </div>
     </>

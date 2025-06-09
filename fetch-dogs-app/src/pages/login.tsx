@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
@@ -6,6 +6,23 @@ function Login() {
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
   //TODO: Add a context to store if Login was successful or not
+
+  useEffect(() => {
+    //ensure no one is logged in when they visit the login page
+    const logout = async () => {
+      const response = await fetch(
+        "https://frontend-take-home-service.fetch.com/auth/logout",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
+    };
+    logout();
+  }, []);
 
   const handleSubmit = (e) => {
     // Prevent the browser from reloading the page
