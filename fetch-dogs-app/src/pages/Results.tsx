@@ -72,7 +72,7 @@ function Results() {
               <img
                 src={match.img}
                 alt={match.name}
-                className="card-img-top object-fit-cover border rounded"
+                className="card-img-top object-fit-fill border rounded"
                 style={{ maxHeight: "300px", objectFit: "cover" }}
               />
               <div className="card-body text-center">
