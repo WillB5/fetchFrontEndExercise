@@ -1,0 +1,1 @@
+This project matches users with a dog based on their list of favorite dogs chosen. The user logs in with their name and email, then they choose what dogs they like from a list of available dogs. After they submit their list, they will be given a match.
