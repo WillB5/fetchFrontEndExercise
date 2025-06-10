@@ -58,23 +58,24 @@ function Results() {
       <title>Results</title>
       <Navbar favorites={[]} />
       <div
-        className=""
-        style={{
-          justifyContent: "center",
-          verticalAlign: "middle",
-          alignItems: "center",
-        }}
+        className="d-flex justify-content-center align-items-center mt-4"
+        style={{ minHeight: "70vh" }}
       >
-        <h1 className="text-center">Your Match is: </h1>
-        <div className="container mt-3">
+        <div className="container">
+          <h1 className="text-center mb-4">Your Match is:</h1>
           {match && (
-            <div className="card" key={match.id}>
+            <div
+              className="card mx-auto w-100 w-md-75 w-lg-50"
+              style={{ maxWidth: "500px" }}
+              key={match.id}
+            >
               <img
                 src={match.img}
                 alt={match.name}
-                className="card-img-top object-fit-fill border rounded"
+                className="card-img-top object-fit-cover border rounded"
+                style={{ maxHeight: "300px", objectFit: "cover" }}
               />
-              <div className="card-body">
+              <div className="card-body text-center">
                 <h2 className="card-title">{match.name}</h2>
                 <p className="card-text">Age: {match.age}</p>
                 <p className="card-text">Breed: {match.breed}</p>
