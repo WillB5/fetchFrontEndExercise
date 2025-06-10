@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DogInfo from "../Components/dogInfo";
 import Favorites from "../Components/favorites";
+import Navbar from "../Components/navbar";
 
 interface Dog {
   id: string;
@@ -17,25 +18,31 @@ function Search() {
   const [sortOrder, setSortOrder] = useState("asc");
   const [filterBreed, setFilterBreed] = useState("All");
   const [breeds, setBreeds] = useState<string[]>([]);
-  const [dogIDs, setDogIDs] = useState<string[]>([]);
+  const [nextPage, setNextPage] = useState<string | null>(null);
+  const [prevPage, setPrevPage] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Dog[]>([]);
   const navigate = useNavigate();
 
   const dogsBaseURL = "https://frontend-take-home-service.fetch.com";
 
-  function formQuery(breed: string): string {
-    if (breed == "All") {
+  function formQuery() {
+    if (filterBreed == "All") {
       return `${dogsBaseURL}/dogs/search?sort=breed:${sortOrder}`;
     } else {
       return `${dogsBaseURL}/dogs/search?sort=breed:${sortOrder}&breeds=${encodeURIComponent(
-        breed
+        filterBreed
       )}`;
     }
   }
 
-  const fetchDogs = async () => {
-    let url = formQuery(filterBreed);
-    console.log("Fetching dogs with URL:", url);
+  const fetchDogs = async (url?: string) => {
+    if (!url) {
+      url = formQuery();
+      setNextPage(null);
+      setPrevPage(null);
+    } else {
+      url = `${dogsBaseURL}${url}`;
+    }
 
     const response = await fetch(url, {
       method: "GET",
@@ -43,34 +50,45 @@ function Search() {
     });
 
     if (!response.ok) {
-      // Redirect to login if not authenticated
+      console.error("Failed to fetch dogs:", response.status);
       navigate("/");
+      return;
     }
 
     const data = await response.json();
-    setDogIDs(data.resultIds);
-    console.log("Dog IDs fetched:", data.resultIds);
-  };
 
-  const fetchDogInfo = async () => {
-    const response = await fetch(
-      "https://frontend-take-home-service.fetch.com/dogs",
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(dogIDs),
-      }
-    );
-    const dogsData = await response.json();
-    setDogs(dogsData);
-    console.log("Response from /dogs:", dogsData);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch Dogs: ${response.status}`);
+    //check if next page is empty
+    const nextResponse = await fetch(dogsBaseURL + data.next, {
+      method: "GET",
+      credentials: "include",
+    });
+    const nextData = await nextResponse.json();
+    if (nextData.resultIds?.length === 0) {
+      setNextPage(null);
+    } else {
+      setNextPage(data.next);
     }
+    setPrevPage(data.prev);
+
+    console.log("Dog IDs fetched:", data.resultIds);
+
+    //fetch dog info after getting IDs
+    const dogInfoResponse = await fetch(`${dogsBaseURL}/dogs`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data.resultIds),
+    });
+
+    if (!dogInfoResponse.ok) {
+      throw new Error(`Failed to fetch Dogs: ${dogInfoResponse.status}`);
+    }
+
+    const dogsData = await dogInfoResponse.json();
+    setDogs(dogsData);
+    console.log("Dog Data:", dogsData);
   };
 
   const fetchBreeds = async () => {
@@ -96,24 +114,15 @@ function Search() {
   }, []);
 
   useEffect(() => {
-    console.log(filterBreed, "- has changed"); //Debugging, listen to state change
-    //TO DO:form query on selected breed change.
     fetchDogs();
-  }, [filterBreed]);
-
-  useEffect(() => {
-    if (dogIDs.length > 0) {
-      fetchDogInfo();
-    }
-  }, [dogIDs]);
-
-  useEffect(() => {
-    console.log("Dogs array has changed");
-    console.log(dogs);
-  }, [dogs]);
+  }, [filterBreed, sortOrder]);
 
   const handleBreedSelect = (breed: string) => {
     setFilterBreed(breed);
+  };
+
+  const handleSortOrderSelect = (order: string) => {
+    setSortOrder(order);
   };
 
   const addToFavorites = (
@@ -129,7 +138,7 @@ function Search() {
     }
 
     console.log(`${dog.name} added to favorites!`);
-    setFavorites([...favorites, dog]); // Create a new array without mutation
+    setFavorites([...favorites, dog]);
   };
 
   const removeFromFavorites = (id: string) => {
@@ -148,36 +157,13 @@ function Search() {
     </li>
   ));
 
-  const dogInfo = dogs
-    .filter((dog) => !favorites.some((fav) => fav.id === dog.id)) // ⛔ Exclude favorites
-    .map((item) => (
-      <div
-        className="card text-center align-middle"
-        key={item.id}
-        style={{ width: "18rem" }}
-      >
-        <DogInfo
-          id={item.id}
-          img={item.img}
-          name={item.name}
-          age={item.age}
-          zip_code={item.zip_code}
-          breed={item.breed}
-        />
-        <button
-          onClick={() => addToFavorites(item, favorites, setFavorites)}
-          className="btn btn-primary"
-        >
-          Add to Favorites
-        </button>
-      </div>
-    ));
-
   return (
     <>
       <title>Search</title>
+
       <div className="bg-secondary bg-opacity-50 min-vh-100">
-        <h1 className="text-center">Search Page</h1>
+        <Navbar favorites={favorites} />
+
         <div className="d-flex justify-content-center mt-3">
           <div id="filterBar" className="d-flex gap-3">
             <h4>Filter by:</h4>
@@ -190,7 +176,10 @@ function Search() {
               >
                 Breed: {filterBreed}
               </button>
-              <ul className="dropdown-menu dropdown-menu-dark">
+              <ul
+                className="dropdown-menu dropdown-menu-dark"
+                style={{ maxHeight: "30vh", overflowY: "auto" }}
+              >
                 <li>
                   <button
                     className="dropdown-item"
@@ -211,13 +200,27 @@ function Search() {
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                State:
+                Order: {sortOrder.charAt(0).toUpperCase() + sortOrder.slice(1)}
               </button>
               <ul className="dropdown-menu dropdown-menu-dark">
                 <li>
-                  <button className="dropdown-item" type="button"></button>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => handleSortOrderSelect("asc")}
+                    type="button"
+                  >
+                    Ascending
+                  </button>
                 </li>
-                {}
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => handleSortOrderSelect("desc")}
+                    type="button"
+                  >
+                    Descending
+                  </button>
+                </li>
               </ul>
             </div>
           </div>
@@ -290,6 +293,30 @@ function Search() {
               removeFromFavorites={removeFromFavorites}
             />
           </div>
+        </div>
+        <div className="container d-flex justify-content-center mt-3 gap-1">
+          <button
+            className="btn btn-primary d-flex"
+            disabled={prevPage == null}
+            onClick={() => {
+              if (prevPage) {
+                fetchDogs(prevPage);
+              }
+            }}
+          >
+            Prev
+          </button>
+          <button
+            className="btn btn-primary d-flex"
+            disabled={!nextPage || dogs.length === 0}
+            onClick={() => {
+              if (nextPage) {
+                fetchDogs(nextPage);
+              }
+            }}
+          >
+            Next
+          </button>
         </div>
       </div>
     </>

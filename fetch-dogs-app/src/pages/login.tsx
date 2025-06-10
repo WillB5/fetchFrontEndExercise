@@ -1,31 +1,26 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const navigate = useNavigate();
-  //TODO: Add a context to store if Login was successful or not
 
   useEffect(() => {
     //ensure no one is logged in when they visit the login page
     const logout = async () => {
-      const response = await fetch(
-        "https://frontend-take-home-service.fetch.com/auth/logout",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        }
-      );
+      await fetch("https://frontend-take-home-service.fetch.com/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
     };
     logout();
   }, []);
 
   const handleSubmit = (e) => {
-    // Prevent the browser from reloading the page
     e.preventDefault();
     console.log("handleSubmit ran");
     console.log("name submitted: ", name);
@@ -50,8 +45,6 @@ function Login() {
       if (response.ok) {
         console.log("Login successful");
         navigate("/search");
-      } else {
-        console.error(`Login failed. Status: ${response.status}`); //Debugging
       }
     } catch (error) {
       console.error("Network or server error:", error);
@@ -61,6 +54,16 @@ function Login() {
   return (
     <>
       <title>Login</title>
+      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div className="container-fluid">
+          <span className="navbar-brand mb-0 h1">
+            Dog Matcher <i className="bi bi-search-heart-fill"></i>
+          </span>
+          <ul className="navbar-nav">
+            <li className="nav-item"></li>
+          </ul>
+        </div>
+      </nav>
       <form className="mx-auto p-4" onSubmit={handleSubmit}>
         <div className="mb-3">
           <label htmlFor="inputName" className="form-label">
