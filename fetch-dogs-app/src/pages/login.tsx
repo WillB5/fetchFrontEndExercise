@@ -20,7 +20,7 @@ function Login() {
     logout();
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     console.log("handleSubmit ran");
     console.log("name submitted: ", name);
